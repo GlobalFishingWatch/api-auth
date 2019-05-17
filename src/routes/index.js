@@ -1,5 +1,5 @@
 const swagger = require("./swagger");
-const users = require("./users");
 const authorization = require("./authorization");
+const datasets = require("./datasets");
 
-module.exports = [swagger, users, authorization];
+module.exports = [swagger, authorization, ...datasets];
