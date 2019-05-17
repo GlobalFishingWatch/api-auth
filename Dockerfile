@@ -17,6 +17,9 @@ ENV NODE_ENV=production
 copy package*.json /opt/project/
 RUN npm --unsafe-perm install --only production
 
+# Setup the application code
+COPY src /opt/project/src
+
 ################################################################################
 # Development environment
 ################################################################################
@@ -28,10 +31,10 @@ ENV NODE_ENV=development
 # Setup development dependencies
 RUN npm --unsafe-perm install --only development
 
+# Setup test code
+COPY spec /opt/project/spec
+
 ################################################################################
 # Productive environment
 ################################################################################
 FROM dependencies AS production
-
-# Setup the application code
-COPY src /opt/project/src
