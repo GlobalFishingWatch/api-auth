@@ -1,0 +1,164 @@
+swagger: '2.0'
+info:
+  version: 1.0.0
+  title: GFW Auth API
+  description: |
+    The GFW Auth API handles both user authentication and resource access authorization across the GFW Platform.
+
+    ## Authentication
+
+    The GFW Platform requires authorization through OAuth 2.0. All protected endpoints require you to provide an access token (see http://tools.ietf.org/html/rfc6749#section-7). We use the bearer protocol (see https://tools.ietf.org/html/rfc6750), so you just need to include the access token by adding an `Authorization: Bearer {token}` header to all requests to protected resources. The same access token can be used across the entire GFW Platform.
+
+    The GFW Auth API works as an authorization server in this scheme, providing a standard OAuth 2.0 compliant authorization endpoint at `/oauth/authorize`. See http://tools.ietf.org/html/rfc6749. We only support the implicit grant flow, documented at http://tools.ietf.org/html/rfc6749#section-4.2. This endpoint behaves as documented at http://tools.ietf.org/html/rfc6749#section-4.2.1, with some deviations,  We are not (yet) doing client validation, nor redirection validation. This *will* change once we get to make the API more secure.  Also, we don't implement scoping yet, so no need to send the scope parameter.
+
+    ## Authorization
+
+    The GFW Auth API also provides authorization endpoints, allowing a client to check if a user has permissions to perform certain actions.
+
+    ## Internal services
+
+    The GFW Auth API also provides some protected, internal endpoints which are used by other services in the GFW Platform to perform authentication and authorization tasks, such as validating an access token which was provided by a client, checking dataset access permissions and so on. These internal API endpoints are protected via API Key access.
+
+securityDefinitions:
+  oauth:
+    type: oauth2
+    description: |
+      Security scheme used for accessing protected endpoints to be consumed by clients
+    authorizationUrl: /oauth/authorize
+    flow: implicit
+    scopes:
+      all: Single scope to access everything.
+
+definitions:
+  ValidationError:
+    type: object
+    required:
+      - fields
+      - general
+    properties:
+      fields:
+        type: array
+        items:
+          type: object
+          required:
+            - field
+            - errors
+          properties:
+            field:
+              type: string
+            errors:
+              type: array
+              items:
+                type: object
+                required:
+                  - code
+                  - description
+                properties:
+                  code:
+                    type: string
+                  description:
+                    type: string
+      general:
+        type: array
+        items:
+          type: object
+          required:
+            - code
+            - description
+          properties:
+            code:
+              type: string
+            description:
+              type: string
+
+responses:
+  BadRequest:
+    description: |
+      Bad request. Invalid or wrong parameters were provided.
+    schema:
+      $ref: '#/definitions/ValidationError'
+
+  Unauthorized:
+    description: |
+      Unauthorized, either the api key is invalid or expired.
+
+  NotFound:
+    description: |
+      Not found. Either the dataset does not exist, or the specific entity which was requested does not exist.
+
+paths:
+
+  "/datasets/{dataset}/users/me":
+    get:
+      summary: |
+        Obtains information about the logged user
+      description: |
+        Obtains information about the user that owns the authorization token.  This information has to be contextualized to a dataset, as some of the user characteristics change depending on the dataset which is being accessed (such as allowedFeatures). In addition to this, if the user doesn't have access to the given dataset, a 403 Forbidden will be returned.
+      produces:
+        - application/json
+      security:
+        - oauth:
+          - all
+      parameters:
+        - name: dataset
+          description: |
+            Dataset context for the user information
+          in: path
+          type: string
+          required: true
+      responses:
+        "400":
+          $ref: '#/responses/BadRequest'
+        "401":
+          $ref: '#/responses/Unauthorized'
+        "403":
+          description: |
+            Forbidden. The user associated with the access token is not allowed to access the context dataset.
+        "404":
+          $ref: '#/responses/NotFound'
+        "200":
+          description: |
+            Expected response to a successful request.
+          schema:
+            type: object
+            title: User
+            required:
+              - displayName
+              - email
+              - photos
+              - identity
+              - allowedFeatures
+            properties:
+              displayName:
+                type: string
+              email:
+                type: string
+                format: email
+              photos:
+                type: object
+                title: User photos
+                required:
+                  - main
+                  - thumbnail
+                properties:
+                  main:
+                    type: string
+                    format: url
+                  thumbnail:
+                    type: string
+                    format: url
+              identity:
+                type: object
+                title: User identity
+                required:
+                  - type
+                  - id
+                properties:
+                  type:
+                    type: string
+                  id:
+                    type: string
+              allowedFeatures:
+                type: array
+                items:
+                  type: string
