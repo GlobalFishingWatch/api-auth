@@ -13,11 +13,7 @@ info:
 
     ## Authorization
 
-    The GFW Auth API also provides authorization endpoints, allowing a client to check if a user has permissions to perform certain actions.
-
-    ## Internal services
-
-    The GFW Auth API also provides some protected, internal endpoints which are used by other services in the GFW Platform to perform authentication and authorization tasks, such as validating an access token which was provided by a client, checking dataset access permissions and so on. These internal API endpoints are protected via API Key access.
+    The GFW Auth API also provides authorization endpoints, allowing a client to check if a user has permissions to perform certain actions. This may be called by clients to check if the user has permissions to do certain actions before attempting to do so by calling the appropriate API's, which would generate an Unauthorized response.
 
 securityDefinitions:
   oauth:

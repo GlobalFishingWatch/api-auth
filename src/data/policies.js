@@ -8,12 +8,4 @@ module.exports = {
     const [record] = await datastore.get(key);
     return record;
   },
-
-  save(id, user) {
-    const key = datastore.key([kind, id]);
-    return datastore.save({
-      key,
-      data: user
-    });
-  }
 };

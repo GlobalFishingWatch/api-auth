@@ -3,14 +3,6 @@ const actions = require("../../data/actions");
 const users = require("../../data/users");
 const log = require("../../data/log");
 
-const checkAction = (action, applicablePolicies, dataset) => {
-  return applicablePolicies.some(
-    policy =>
-      dataset.startsWith(policy.datasetPrefix) &&
-      action.startsWith(policy.actionPrefix)
-  );
-};
-
 const getAllAllowedActions = async (user, dataset) => {
   log.debug("Getting applicable policies");
   const applicablePolicies = await users.loadApplicablePolicies(user);
@@ -18,9 +10,9 @@ const getAllAllowedActions = async (user, dataset) => {
   log.debug("Checking each action against applicable policies");
   const actionReducer = (result, action) => ({
     ...result,
-    [action]: checkAction(action, applicablePolicies, dataset)
+    [action]: action.isActionAllowed(action, applicablePolicies, dataset)
   });
-  return actions.reduce(actionReducer, {});
+  return actions.all.reduce(actionReducer, {});
 };
 
 const isActionAllowed = async (action, user, dataset) => {
@@ -28,7 +20,7 @@ const isActionAllowed = async (action, user, dataset) => {
   const applicablePolicies = await users.loadApplicablePolicies(user);
 
   log.debug("Checking action against policies");
-  return checkAction(action, applicablePolicies, dataset);
+  return action.isActionAllowed(action, applicablePolicies, dataset);
 };
 
 module.exports = app => {

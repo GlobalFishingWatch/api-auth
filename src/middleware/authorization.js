@@ -46,16 +46,4 @@ module.exports = {
       }
     };
   },
-
-  requiresAdminKey() {
-    return (req, res, next) => {
-      const authorizationClaim = req.get("authorization");
-
-      if (authorizationClaim !== config.authorization.adminKey) {
-        res.sendStatus(401);
-      } else {
-        next();
-      }
-    };
-  }
 };
