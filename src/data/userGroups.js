@@ -14,14 +14,6 @@ module.exports = {
     return record;
   },
 
-  save(id, user) {
-    const key = datastore.key([kind, id]);
-    return datastore.save({
-      key,
-      data: user
-    });
-  },
-
   async loadPolicies(userGroup) {
     if (userGroup.policies.length < 1) {
       return [];
