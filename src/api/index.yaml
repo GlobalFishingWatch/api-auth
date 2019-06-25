@@ -111,9 +111,7 @@ paths:
       summary: |
         Obtains information about the logged user
       description: |
-        Obtains information about the user that owns the authorization token.  This information has to be contextualized to a dataset, as some of the user characteristics change depending on the dataset which is being accessed (such as allowedActions).
-      tags:
-        - Public
+        Obtains information about the user that owns the authorization token. This information has to be contextualized to a dataset, as some of the user characteristics change depending on the dataset which is being accessed (such as allowedActions).
       produces:
         - application/json
       security:
@@ -183,8 +181,6 @@ paths:
         Check if an action is available the given user
       description: |
         Check if the user that owns the authorization token can perform a given action in a given dataset. Much faster than getting the complete user record and checking the allowedActions.
-      tags:
-        - Public
       produces:
         - application/json
       security:
@@ -196,6 +192,98 @@ paths:
           in: path
           type: string
           required: true
+        - name: action
+          description: |
+            Specific action to check
+          in: path
+          type: string
+          required: true
+          enum: *ACTIONS
+      responses:
+        "400":
+          $ref: '#/responses/BadRequest'
+        "403":
+          description: |
+            Forbidden. The user is not allowed to perform the given action in the given dataset.
+        "404":
+          $ref: '#/responses/NotFound'
+        "200":
+          description: |
+            Expected response to a successful request.
+
+  "/users/me":
+    get:
+      summary: |
+        Obtains information about the logged user
+      description: |
+        Obtains information about the user that owns the authorization token. The main difference with the `/datasets/{dataset}/users/me` endoint is that this endpoint doesn't scope permissions to a single dataset, and so only returns the `allowedActions` that are enabled globally for all datasets.
+      produces:
+        - application/json
+      security:
+        - oauth: [all]
+      responses:
+        "400":
+          $ref: '#/responses/BadRequest'
+        "404":
+          $ref: '#/responses/NotFound'
+        "200":
+          description: |
+            Expected response to a successful request.
+          schema:
+            type: object
+            title: User
+            required:
+              - displayName
+              - email
+              - photos
+              - identity
+              - allowedActions
+            properties:
+              displayName:
+                type: string
+              email:
+                type: string
+                format: email
+              photos:
+                type: object
+                title: User photos
+                required:
+                  - main
+                  - thumbnail
+                properties:
+                  main:
+                    type: string
+                    format: url
+                  thumbnail:
+                    type: string
+                    format: url
+              identity:
+                type: object
+                title: User identity
+                required:
+                  - type
+                  - id
+                properties:
+                  type:
+                    type: string
+                  id:
+                    type: string
+              allowedActions:
+                type: array
+                items:
+                  $ref: '#/definitions/Action'
+
+  "/users/me/actions/{action}":
+    get:
+      summary: |
+        Check if an action is available the given user
+      description: |
+        Check if the user that owns the authorization token can perform a given action in a given dataset. Much faster than getting the complete user record and checking the allowedActions. The main difference with the `/datasets/{dataset}/users/me/actions/{action}` endoint is that this endpoint doesn't scope permissions to a single dataset, and so only returns a successful response if the action is enabled globally for all datasets.
+      produces:
+        - application/json
+      security:
+        - oauth: [all]
+      parameters:
         - name: action
           description: |
             Specific action to check

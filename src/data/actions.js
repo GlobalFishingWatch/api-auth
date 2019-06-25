@@ -3,7 +3,7 @@ const apiSpec = require("../api");
 module.exports = {
   all: apiSpec.definitions.Action.enum,
 
-  isActionAllowed(action, applicablePolicies, dataset) {
+  isActionAllowed(action, applicablePolicies, dataset = "") {
     const finalPolicy = applicablePolicies.find(
       policy =>
         dataset.startsWith(policy.datasetPrefix) &&
@@ -17,5 +17,3 @@ module.exports = {
     return false;
   }
 };
-
-module.exports = apiSpec.definitions.Action.enum;

@@ -21,7 +21,10 @@ module.exports = {
 
   async loadGroups(user) {
     const [groups] = await datastore.get(user.groups);
-    return groups;
+    const sortedGroups = user.groups.map(userGroup =>
+      groups.find(group => group.name === userGroup.name)
+    );
+    return sortedGroups;
   },
 
   async loadApplicablePolicies(user) {

@@ -1,7 +1,6 @@
 const authorization = require("../data/authorization");
 const users = require("../data/users");
 const userGroups = require("../data/userGroups");
-const config = require("../config");
 
 const parseAuthorizationHeader = header => {
   if (header) {
@@ -45,5 +44,5 @@ module.exports = {
         next(error);
       }
     };
-  },
+  }
 };

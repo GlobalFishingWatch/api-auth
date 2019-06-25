@@ -19,6 +19,9 @@ module.exports = {
       return [];
     }
     const [policies] = await datastore.get(userGroup.policies);
-    return policies;
+    const sortedPolicies = userGroup.policies.map(groupPolicy =>
+      policies.find(policy => policy.name === groupPolicy.name)
+    );
+    return sortedPolicies;
   }
 };
