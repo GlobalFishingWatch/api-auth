@@ -1,5 +1,6 @@
 const authorization = require("../data/authorization");
 const users = require("../data/users");
+const userGroups = require("../data/userGroups");
 
 const parseAuthorizationHeader = header => {
   if (header) {
@@ -23,11 +24,15 @@ module.exports = {
       try {
         const token = parseAuthorizationHeader(req.get("authorization"));
         const payload = token && authorization.decode(token);
-        const user = await (payload && users.get(payload.id));
+        const databaseUser = await (payload && users.get(payload.id));
 
-        if (!user && !actualOptions.allowAnonymous) {
+        if (!databaseUser && !actualOptions.allowAnonymous) {
           throw new Error("Invalid authorization claim");
         }
+
+        const user = databaseUser || {
+          groups: [userGroups.keys.anonymous]
+        };
 
         req.authorization = {
           user,

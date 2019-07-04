@@ -10,7 +10,6 @@ services:
       - "./src:/opt/project/src"
       - "./spec:/opt/project/spec"
       - "./package.json:/opt/project/package.json"
-      - "./.eslintrc.js:/opt/project/.eslintrc.js"
       - "./dev:/opt/project/dev"
       - "~/.config/gcloud:/root/.config/gcloud"
     ports:

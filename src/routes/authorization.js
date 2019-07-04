@@ -1,12 +1,38 @@
 const qs = require("querystring");
+const util = require("util");
 const salesforce = require("../data/salesforce");
 const authorization = require("../data/authorization");
 const users = require("../data/users");
+const userGroups = require("../data/userGroups");
 const log = require("../data/log");
 
+const appendDefaultUserGroup = user => {
+  const originalGroups = (user && user.groups) || [];
+  log.debug(`The original user groups are ${util.inspect(originalGroups)}`);
+  if (
+    !originalGroups.find(
+      groupKey =>
+        groupKey.kind === userGroups.keys.default.kind &&
+        groupKey.name === userGroups.keys.default.name
+    )
+  ) {
+    log.debug("The original groups don't include the default");
+    return [...originalGroups, userGroups.keys.default];
+  }
+
+  log.debug("The original groups include the default");
+  return originalGroups;
+};
+
 const storeSalesforceUser = async (salesforceUser, accessTokens) => {
+  log.debug("Storing salesforce user in local datastore");
+
   const id = `sf:${salesforceUser.id}`;
   const existingUser = await users.get(id);
+
+  log.debug(`Existing user is ${util.inspect(existingUser)}`);
+
+  const groups = appendDefaultUserGroup(existingUser);
 
   const updatedUser = {
     id,
@@ -27,12 +53,12 @@ const storeSalesforceUser = async (salesforceUser, accessTokens) => {
       }
     },
 
-    roles: (existingUser && existingUser.roles) || [],
-
     tokens: {
       accessToken: accessTokens.access_token,
       refreshToken: accessTokens.refresh_token
-    }
+    },
+
+    groups
   };
 
   await users.save(id, updatedUser);
